@@ -1,0 +1,2 @@
+<global> <rdf:type> <cloud-owl:Region> .
+<global> <cloud:id> "global" .

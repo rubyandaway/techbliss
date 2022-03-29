@@ -1,0 +1,2 @@
+<us-east-1> <rdf:type> <cloud-owl:Region> .
+<us-east-1> <cloud:id> "us-east-1" .
