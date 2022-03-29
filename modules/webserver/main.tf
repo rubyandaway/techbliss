@@ -23,7 +23,7 @@ resource "aws_subnet" "webserver_subnet" {
 
 resource "aws_instance" "webserver_machine" {
   ami = data.aws_ssm_parameter.ami-id.value
-  user_data  = file("/scripts/Apache-server.sh")
+  user_data  = file("./scripts/Apache-server.sh")
   subnet_id = aws_subnet.webserver_subnet.id
   instance_type = var.instance_type
 
