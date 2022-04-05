@@ -2,7 +2,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.0"
+      version = "~> 3.27"
     }
   }
 }
@@ -23,7 +23,14 @@ resource "aws_subnet" "webserver_subnet" {
 
 resource "aws_instance" "webserver_machine" {
   ami = data.aws_ssm_parameter.ami-id.value
-  user_data  = file("techbliss/modules/webserver/scripts/Apache-server.sh")
+  user_data  = <<-EOF
+                  #!/bin/bash
+                  sudo su
+                  yum -y install httpd
+                  echo "<p><h1> My Instance is running! </h1></p>" >> /var/www/html/index.html
+                  sudo systemctl enable httpd
+                  sudo systemctl start httpd
+                  EOF
   subnet_id = aws_subnet.webserver_subnet.id
   instance_type = var.instance_type
 
