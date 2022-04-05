@@ -1,15 +1,3 @@
-terraform {
-  backend "s3" {
-    bucket = "bucks-90-weed"
-    key    = "dev/terraform.tfstate"
-    region = "us-east-1"
-    acl    = "private"
-  }
-}
-provider "aws" {
-  region = var.main_region
-}
-
 module "vpc" {
   source = "./modules/vpc"
   region = var.main_region
