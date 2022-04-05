@@ -3,26 +3,12 @@ variable "region" {
   default = "us-east-1"
 }
 
-variable "env" {
-  default     = ""
-}
-
-variable "prod-subnet" {
-  default = ""
-}
-
-variable "dev-subnet" {
-  default = ""
-}
-
 variable "instance_type" {
-  default = ""
+  default = "t2.micro"
 }
 
-variable "vpc_cidr" {
-  default = ""
+variable "ami" {
+  type = string
+  default = "ami-04505e74c0741db8d"
 }
 
-variable "webserver_cidr" {
-  default = ""
-}

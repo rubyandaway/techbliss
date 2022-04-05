@@ -1,27 +1,30 @@
-terraform {
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 3.0"
-    }
+resource "aws_vpc" "main_vpc" {
+  cidr_block = var.vpc_cidr_block
+  enable_dns_hostnames = true
+
+  tags = {
+    Name = "Production-VPC"
+  }
+}
+
+resource "aws_subnet" "module_public_subnet_1" {
+  vpc_id     = aws_vpc.main_vpc.id
+  cidr_block = var.public_subnet_1_cidr
+  availability_zone = "${var.region}a"
+
+  tags = {
+    Name = "Public -Subnet-1"
+  }
+}
+
+resource "aws_subnet" "module_public_subnet_2" {
+  vpc_id     = aws_vpc.main_vpc.id
+  cidr_block = var.public_subnet_2_cidr
+  availability_zone = "${var.region}b"
+
+  tags = {
+    Name = "Public -Subnet-2"
   }
 }
 
 
-provider "aws" {
-  profile = "default"
-  region  = var.region
-}
-
-resource "aws_vpc" "this" {
-  cidr_block = "10.0.0.0/16"
-}
-
-resource "aws_subnet" "this" {
-  vpc_id     = aws_vpc.this.id
-  cidr_block = "10.0.1.0/24"
-}
-
-data "aws_ssm_parameter" "this" {
-  name = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
-}

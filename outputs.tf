@@ -3,9 +3,9 @@
 #}
 
 output "PublicIP" {
-  value = aws_instance.my-instance.public_dns
+  value = aws_instance.webserver-instance.public_ip
 }
 
 output "DNS" {
-  value = aws_instance.my-instance.public_dns
+  value = aws_instance.webserver-instance.public_dns
 }
