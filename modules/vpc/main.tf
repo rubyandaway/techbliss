@@ -7,7 +7,9 @@ resource "aws_vpc" "main_vpc" {
   }
 }
 
-data "aws_availability_zones" "available" {}
+data "aws_availability_zones" "available" {
+  state = "available"
+}
 
 resource "aws_internet_gateway" "igw" {
   vpc_id = aws_vpc.main_vpc.id
@@ -22,9 +24,6 @@ resource "aws_route_table" "rtb" {
     gateway_id = aws_internet_gateway.igw.id
   }
 }
-
-
-
 
 
 resource "aws_subnet" "module_public_subnet_1" {
