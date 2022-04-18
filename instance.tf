@@ -14,40 +14,17 @@ module "webserver" {
 
 }
 
-# WEBSERVER A #
-resource "aws_instance" "webserver-instance-a"  {
-  ami           = module.webserver.ami_id
-  subnet_id =  module.vpc.module_public_subnet_1
-  instance_type = var.instance_type
-
-  tags = {
-    Name = "Webserver A"
-  }
-
-}
-
-# WEBSERVER B #
-resource "aws_instance" "webserver-instance-b" {
-  ami           = module.webserver.ami_id
-  subnet_id     = module.vpc.module_public_subnet_2
-  instance_type = var.instance_type
-
-  tags = {
-    Name = "Webserver B"
-  }
-}
-
-# LOAD BALANCER #
-resource "aws_elb" "web" {
+resource "aws_elb" "webserver-elb" {
   name = "webserver-elb"
+  availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
 
-  #  subnets         = aws_subnet.subnet[*].id
-  #  security_groups = [aws_security_group.elb-sg.id]
-  #  instances       = aws_instance.nginx[*].id
-
-  subnets = ["aws_subnet.module_public_subnet_[*].id"]
-  security_groups = ""
-  instances = ["$aws_instance.webserver-instance.*.id"]
+  health_check {
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 3
+    target              = "HTTP:80/"
+    interval            = 60
+  }
 
   listener {
     instance_port     = 80
@@ -58,22 +35,52 @@ resource "aws_elb" "web" {
 
 }
 
+resource "aws_security_group" "elb-sg" {
+  name   = "elb_sg"
+  vpc_id = module.vpc.module_vpc_id
+
+  #Allow HTTP from anywhere
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  #allow all outbound
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+}
+
+output "aws_elb_public_dns" {
+  value = aws_elb.webserver-elb.dns_name
+}
+
 # ASG LAUNCH TEMPLATE
 resource "aws_launch_template" "web-asg" {
   name_prefix   = "autoscaler"
   image_id      = module.webserver.ami_id
   instance_type = var.instance_type
+
+  tags = {
+    Name = "From-web-server-asg"
+  }
 }
 
 #ASG #
 resource "aws_autoscaling_group" "webautoscalers" {
-  availability_zones = ["us-east-1a"]
+  availability_zones = ["us-east-1a" , "us-east-1b" , "us-east-1c"]
   desired_capacity   = 2
-  max_size           = 6
+  max_size           = 4
   min_size           = 2
 
   launch_template {
-    id      = aws_launch_template.web-asg
+    id      = aws_launch_template.web-asg.id
     version = "$Latest"
   }
 }
@@ -81,7 +88,7 @@ resource "aws_autoscaling_group" "webautoscalers" {
 #ATTACH ASG to ELB ##
 resource "aws_autoscaling_attachment" "asg_attachment_web" {
   autoscaling_group_name = aws_autoscaling_group.webautoscalers.id
-  elb                    = aws_elb.web.id
+  elb                    = aws_elb.webserver-elb.id
 }
 
 
